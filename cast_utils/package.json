@@ -1,0 +1,11 @@
+{
+  "name": "cast_utils",
+  "version": "1.0.0",
+  "description": "Pacote de utilitários de uso comum",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

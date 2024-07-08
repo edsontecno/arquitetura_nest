@@ -1,0 +1,82 @@
+version: '3.9'
+
+services:
+  seguranca:
+    image: node:18
+    container_name: seguranca
+    volumes:
+      - ./seguranca:/app
+      - type: bind
+        source: ./usuario/backend.sh
+        target: /app/entrypoint.sh
+    working_dir: /app
+    command: sh ./entrypoint.sh
+    environment: 
+      SERVER_PORT: 3000
+      DB_HOST: ${DB_NAME}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_ADMIN_EMAIL: ${DB_ADMIN_EMAIL}
+      NODE_ENV: production
+    ports:
+      - 3001:3000
+    depends_on:
+      - postgres
+    networks:
+      - cast  
+
+  usuario:
+    image: node:18
+    container_name: usuario
+    volumes:
+      - ./usuario:/app
+      - type: bind
+        source: ./usuario/backend.sh
+        target: /app/entrypoint.sh
+    working_dir: /app
+    command: sh ./entrypoint.sh
+    environment: 
+      SERVER_PORT: 3000
+      DB_HOST: ${DB_NAME}
+      DB_PORT: ${DB_PORT}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_ADMIN_EMAIL: ${DB_ADMIN_EMAIL}
+      NODE_ENV: production
+    ports:
+      - 3000:3000
+    depends_on:
+      - postgres
+    networks:
+      - cast      
+
+  postgres:
+    container_name: postgresdb
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATA: /data/postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 3  
+    volumes:
+      - castdb:/data/postgres  
+    ports:
+      - "5432:5432"
+    networks:
+      - cast
+    restart: unless-stopped
+
+networks:
+  cast:
+    driver: bridge
+
+volumes:
+    castdb:    
