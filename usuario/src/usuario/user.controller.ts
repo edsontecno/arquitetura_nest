@@ -16,7 +16,10 @@ import { UserGuard } from './user.guard';
 
 @Controller('user')
 export class userController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    // private readonly guardFactory: GuardFactory,
+  ) {}
 
   @Post()
   async create(@Body() createuserDto: CreateUserDto) {
@@ -62,6 +65,9 @@ export class userController {
   }
 
   @UseGuards(UserGuard)
+  // @UseGuards(() =>
+  //   this.guardFactory.createGuard({ resource: 'consultaracesso' }),
+  // )
   @Get(':id/hasAccess/:resource')
   async hasAccessToResource(
     @Param('id') id: number,
