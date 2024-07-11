@@ -6,10 +6,13 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { LoginDto } from './dto/login.dto';
+import { UserGuard } from './user.guard';
 
 @Controller('user')
 export class userController {
@@ -58,11 +61,17 @@ export class userController {
     return await this.userService.getResourcesUser(id);
   }
 
+  @UseGuards(UserGuard)
   @Get(':id/hasAccess/:resource')
   async hasAccessToResource(
     @Param('id') id: number,
     @Param('resource') resourceName: string,
   ) {
     return await this.userService.hasAccessToResource(id, resourceName);
+  }
+
+  @Post('login')
+  login(@Body() { email, password }: LoginDto) {
+    return this.userService.login(email, password);
   }
 }

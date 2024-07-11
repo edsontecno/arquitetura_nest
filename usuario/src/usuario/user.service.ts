@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { UserEntity } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,6 +17,7 @@ export class UserService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    private jwtService: JwtService,
   ) {}
 
   create(createUserDto: CreateUserDto) {
@@ -64,11 +70,14 @@ export class UserService {
     const user = await this.getUserWithProfile(id);
 
     // Extrair os resources do usuário
-    const resources = user.profiles
+    const resources = this.extractResources(user);
+    return resources;
+  }
+
+  private extractResources(user: UserEntity) {
+    return user.profiles
       .flatMap((profile) => profile.resources)
       .map((resource) => resource.name);
-
-    return resources;
   }
 
   async hasAccessToResource(id: number, resourceName: string) {
@@ -93,5 +102,44 @@ export class UserService {
       throw new Error(`Usuário com ID ${id} não encontrado.`);
     }
     return user;
+  }
+
+  private async getUserWithProfileByEmail(email: string) {
+    const user = await this.userRepository.findOne({
+      where: {
+        email,
+      },
+      relations: ['profiles', 'profiles.resources'],
+    });
+
+    if (!user) {
+      throw new Error(`Usuário com email ${email} não encontrado.`);
+    }
+    return user;
+  }
+
+  public async login(email, password) {
+    const user = await this.getUserWithProfileByEmail(email);
+
+    if (!user) {
+      throw new UnauthorizedException('usuário não localizado');
+    }
+
+    const usuarioLogado = password === user.password;
+
+    if (!usuarioLogado) {
+      throw new UnauthorizedException('usuário ou senha inválidos');
+    }
+
+    console.log('autenticado');
+    const payload = {
+      sub: user.id,
+      nomeUsuario: user.name,
+      resources: this.extractResources(user),
+    };
+
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+    };
   }
 }

@@ -7,7 +7,7 @@ services:
     volumes:
       - ./seguranca:/app
       - type: bind
-        source: ./usuario/backend.sh
+        source: ./seguranca/backend.sh
         target: /app/entrypoint.sh
     working_dir: /app
     command: sh ./entrypoint.sh
@@ -27,9 +27,9 @@ services:
     networks:
       - cast  
 
-  usuario:
+  user:
     image: node:18
-    container_name: usuario
+    container_name: user
     volumes:
       - ./usuario:/app
       - type: bind
