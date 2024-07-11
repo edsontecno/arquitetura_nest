@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { UsuarioModule } from './usuario/usuario.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostgresConfigService } from './config/postgres.config.service';
+import { UserModule } from './usuario/user.module';
 
 @Module({
   imports: [
-    UsuarioModule,
+    UserModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),

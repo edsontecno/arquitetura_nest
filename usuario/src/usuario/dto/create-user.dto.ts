@@ -1,6 +1,6 @@
 import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
 
-export class CreateUsuarioDto {
+export class CreateUserDto {
   @IsNotEmpty({ message: 'O nome não pode ser vazio' })
   nome: string;
 
