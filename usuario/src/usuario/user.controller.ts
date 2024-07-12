@@ -1,3 +1,4 @@
+import { Roles } from './roles.decorator';
 import {
   Body,
   Controller,
@@ -13,6 +14,7 @@ import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { UserGuard } from './user.guard';
+import { Role } from './roles.enum';
 
 @Controller('user')
 export class userController {
@@ -64,10 +66,8 @@ export class userController {
     return await this.userService.getResourcesUser(id);
   }
 
+  @Roles(Role.User)
   @UseGuards(UserGuard)
-  // @UseGuards(() =>
-  //   this.guardFactory.createGuard({ resource: 'consultaracesso' }),
-  // )
   @Get(':id/hasAccess/:resource')
   async hasAccessToResource(
     @Param('id') id: number,

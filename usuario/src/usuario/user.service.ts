@@ -68,8 +68,6 @@ export class UserService {
 
   async getResourcesUser(id) {
     const user = await this.getUserWithProfile(id);
-
-    // Extrair os resources do usuário
     const resources = this.extractResources(user);
     return resources;
   }

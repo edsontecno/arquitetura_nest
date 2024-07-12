@@ -1,67 +1,65 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Role } from './roles.enum';
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { Reflector } from '@nestjs/core';
+import { BusinessRuleException } from 'src/shared/filtros/business-rule-exception';
 
 export interface RequestUsuario extends Request {
   usuario: object;
 }
 
-// interface GuardOptions {
-//   resource: string;
-// }
-
 @Injectable()
 export class UserGuard implements CanActivate {
   constructor(
-    // private readonly options: GuardOptions,
     private jwtService: JwtService,
     private readonly reflector: Reflector,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<RequestUsuario>();
-    const token = this.extrairToken(request);
+    const token = this.extractToken(request);
     if (!token) {
-      throw new UnauthorizedException('Sem token');
+      throw new BusinessRuleException('Sem token', 401);
     }
-    const rotaDefinida = this.reflector.get<string>(
-      'path',
-      context.getHandler(),
-    );
-    // console.log('Parâmetro 1:', this.options.resource);
-    console.log(rotaDefinida);
+
+    let payload;
     try {
-      const payload = await this.jwtService.verifyAsync(token);
-      console.log(payload);
-      request.usuario = payload;
+      payload = await this.jwtService.verifyAsync(token);
     } catch (error) {
       console.log(error);
-      throw new UnauthorizedException('token inválido');
+      throw new BusinessRuleException('token inválido', 401);
     }
+    this.checkRoles(context, payload);
+    request.usuario = payload;
 
     return true;
   }
 
-  extrairToken(request: Request): string | undefined {
+  checkRoles(context, payload) {
+    const requiredRole = this.reflector.get<Role>(
+      'roles',
+      context.getHandler(),
+    );
+
+    if (!requiredRole) {
+      return true;
+    }
+
+    const hasPermission = Object.values(requiredRole).some((item) =>
+      payload.resources.includes(item),
+    );
+
+    if (!hasPermission) {
+      throw new BusinessRuleException(
+        'Usuário não possui permissão para acessar a funcionalidade',
+        401,
+      );
+    }
+  }
+
+  extractToken(request: Request): string | undefined {
     const [tipo, token] = request.headers.authorization?.split(' ') ?? [];
     return tipo === 'Bearer' ? token : undefined;
   }
 }
-
-// @Injectable()
-// export class GuardFactory {
-//   constructor(
-//     private jwtService: JwtService,
-//     private readonly reflector: Reflector,
-//   ) {}
-
-//   createGuard(options: GuardOptions): UserGuard {
-//     return new UserGuard(options, this.jwtService, this.reflector);
-//   }
-// }

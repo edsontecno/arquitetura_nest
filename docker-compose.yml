@@ -1,31 +1,31 @@
 version: '3.9'
 
 services:
-  seguranca:
-    image: node:18
-    container_name: seguranca
-    volumes:
-      - ./seguranca:/app
-      - type: bind
-        source: ./seguranca/backend.sh
-        target: /app/entrypoint.sh
-    working_dir: /app
-    command: sh ./entrypoint.sh
-    environment: 
-      SERVER_PORT: 3000
-      DB_HOST: ${DB_NAME}
-      DB_PORT: ${DB_PORT}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
-      DB_ADMIN_EMAIL: ${DB_ADMIN_EMAIL}
-      NODE_ENV: production
-    ports:
-      - 3001:3000
-    depends_on:
-      - postgres
-    networks:
-      - cast  
+  # seguranca:
+  #   image: node:18
+  #   container_name: seguranca
+  #   volumes:
+  #     - ./seguranca:/app
+  #     - type: bind
+  #       source: ./seguranca/backend.sh
+  #       target: /app/entrypoint.sh
+  #   working_dir: /app
+  #   command: sh ./entrypoint.sh
+  #   environment: 
+  #     SERVER_PORT: 3000
+  #     DB_HOST: ${DB_NAME}
+  #     DB_PORT: ${DB_PORT}
+  #     DB_USERNAME: ${DB_USERNAME}
+  #     DB_PASSWORD: ${DB_PASSWORD}
+  #     DB_NAME: ${DB_NAME}
+  #     DB_ADMIN_EMAIL: ${DB_ADMIN_EMAIL}
+  #     NODE_ENV: production
+  #   ports:
+  #     - 3001:3000
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - cast  
 
   user:
     image: node:18
